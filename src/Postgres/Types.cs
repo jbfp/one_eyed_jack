@@ -19,21 +19,18 @@ namespace Sequence.Postgres
 
         public GameEvent ToGameEvent() => ToGameEvent(this);
 
-        public static GameEvent ToGameEvent(GameEventRow row)
+        public static GameEvent ToGameEvent(GameEventRow row) => new()
         {
-            return new GameEvent
-            {
-                ByPlayerId = row.by_player_id,
-                CardDrawn = row.card_drawn?.ToCard(),
-                CardUsed = row.card_used.ToCard(),
-                Chip = row.chip,
-                Coord = row.coord.ToCoord(),
-                Index = row.idx,
-                NextPlayerId = row.next_player_id,
-                Sequences = row.sequences.Select(SequenceComposite.ToSequence).ToArray(),
-                Winner = row.winner
-            };
-        }
+            ByPlayerId = row.by_player_id,
+            CardDrawn = row.card_drawn?.ToCard(),
+            CardUsed = row.card_used.ToCard(),
+            Chip = row.chip,
+            Coord = row.coord.ToCoord(),
+            Index = row.idx,
+            NextPlayerId = row.next_player_id,
+            Sequences = row.sequences.Select(SequenceComposite.ToSequence).ToArray(),
+            Winner = row.winner
+        };
     }
 #pragma warning restore CS0649
 }

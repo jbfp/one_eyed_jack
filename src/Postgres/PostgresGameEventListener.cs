@@ -1,4 +1,6 @@
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -9,14 +11,17 @@ namespace Sequence.Postgres
     public sealed class PostgresGameEventListener : BackgroundService, IObservable<(GameId, GameEvent)>
     {
         private readonly NpgsqlConnectionFactory _connectionFactory;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly ILogger<PostgresGameEventListener> _logger;
         private readonly Subject<(GameId, GameEvent)> _subject = new();
 
         public PostgresGameEventListener(
             NpgsqlConnectionFactory connectionFactory,
+            IOptions<JsonOptions> jsonOptions,
             ILogger<PostgresGameEventListener> logger)
         {
             _connectionFactory = connectionFactory;
+            _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
             _logger = logger;
         }
 
@@ -37,7 +42,7 @@ namespace Sequence.Postgres
                         handler => connection.Notification += handler,
                         handler => connection.Notification -= handler)
                     .Select(args => args.Payload)
-                    .Select(payload => JsonSerializer.Deserialize<GameEventRow>(payload))
+                    .Select(payload => JsonSerializer.Deserialize<GameEventRow>(payload, _jsonSerializerOptions))
                     .Select(MapToReturnType);
 
                 notifications.Subscribe(_subject);
@@ -85,20 +90,7 @@ namespace Sequence.Postgres
             }
 
             var gameId = row.surrogate_game_id;
-
-            var gameEvent = new GameEvent
-            {
-                ByPlayerId = row.by_player_id,
-                CardDrawn = row.card_drawn?.ToCard(),
-                CardUsed = row.card_used.ToCard(),
-                Chip = row.chip,
-                Coord = row.coord.ToCoord(),
-                Index = row.idx,
-                NextPlayerId = row.next_player_id,
-                Sequences = row.sequences.Select(SequenceComposite.ToSequence).ToArray(),
-                Winner = row.winner
-            };
-
+            var gameEvent = row.ToGameEvent();
             return (gameId, gameEvent);
         }
     }

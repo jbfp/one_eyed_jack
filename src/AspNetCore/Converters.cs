@@ -61,34 +61,7 @@ namespace Sequence.AspNetCore
         }
     }
 
-    internal sealed class TileJsonConverter : JsonConverter<Tile>
-    {
-        public override Tile? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(Utf8JsonWriter writer, Tile value, JsonSerializerOptions options)
-        {
-            if (value is null)
-            {
-                writer.WriteNullValue();
-            }
-            else if (value is (Suit, Rank) tile)
-            {
-                writer.WriteStartArray();
-                writer.WriteStringValue(tile.Suit.ToString());
-                writer.WriteStringValue(tile.Rank.ToString());
-                writer.WriteEndArray();
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-        }
-    }
-
-    internal sealed class GameEventConverter : JsonConverter<GameEvent>
+    internal sealed class GameEventConverter : JsonConverter<IGameEvent>
     {
         private static readonly ImmutableDictionary<Type, string> _keyByType;
         private static readonly ImmutableDictionary<Type, PropertyInfo[]> _propertiesByType;
@@ -129,14 +102,12 @@ namespace Sequence.AspNetCore
             }
         }
 
-        public override bool CanConvert(Type objectType) => typeof(IGameEvent).IsAssignableFrom(objectType);
-
-        public override GameEvent? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override IGameEvent? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, GameEvent value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, IGameEvent value, JsonSerializerOptions options)
         {
             var type = value.GetType();
             var name = _keyByType[type];
@@ -152,8 +123,18 @@ namespace Sequence.AspNetCore
 
             foreach (var property in properties)
             {
-                writer.WritePropertyName(property.Key);
-                JsonSerializer.Serialize(writer, property.Value, type, options);
+                var key = property.Key;
+                var val = property.Value;
+                writer.WritePropertyName(key);
+
+                if (val is null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, val, val.GetType(), options);
+                }
             }
 
             writer.WriteEndObject();

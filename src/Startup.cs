@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc;
 using Sequence.AspNetCore;
 using Sequence.RealTime;
 using System.Text.Json;
@@ -31,11 +30,6 @@ namespace Sequence
             services.AddHealthChecks();
             services.AddMemoryCache();
 
-            if (_env.IsDevelopment())
-            {
-                services.AddCors();
-            }
-
             services.AddSequence(_configuration);
         }
 
@@ -52,12 +46,6 @@ namespace Sequence
             }
             else if (_env.IsDevelopment())
             {
-                app.UseCors(policy => policy
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .WithOrigins("http://localhost:3000")
-                    .AllowCredentials());
-
                 app.UseDeveloperExceptionPage();
             }
 
@@ -74,15 +62,16 @@ namespace Sequence
 
         private static void ConfigureJsonOptions(JsonSerializerOptions options)
         {
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            var namingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNamingPolicy = namingPolicy;
+            options.IncludeFields = true;
 
             var converters = options.Converters;
-            converters.Add(new JsonStringEnumConverter());
+            converters.Add(new JsonStringEnumConverter(namingPolicy));
             converters.Add(new GameEventConverter());
             converters.Add(new GameIdJsonConverter());
             converters.Add(new PlayerHandleJsonConverter());
             converters.Add(new PlayerIdJsonConverter());
-            converters.Add(new TileJsonConverter());
         }
     }
 }

@@ -81,7 +81,7 @@ function App(props: RouteProps) {
                 <Switch>
                     <Route path="/login" component={Login} />
 
-                    <ServerContext.Provider value={new Server(window.env.api, userName)}>
+                    <ServerContext.Provider value={new Server(userName)}>
                         <ProtectedRoute path="/" exact={true} component={Games} />
                         <ProtectedRoute path="/games" exact={true} component={Games} />
                         <ProtectedRoute path="/new-game" exact={true} component={NewGame} />

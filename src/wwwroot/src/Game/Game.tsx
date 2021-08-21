@@ -1,4 +1,4 @@
-import * as SignalR from '@aspnet/signalr';
+import * as SignalR from '@microsoft/signalr';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ServerContext } from '../contexts';
 import * as t from '../types';
@@ -11,7 +11,7 @@ interface GameProps {
     onRequestReload: () => Promise<void>;
 }
 
-const HUB_URL = `${window.env.api}/game-hub`;
+const HUB_URL = '/game-hub';
 
 const CONNECTION_OPTIONS: SignalR.IHttpConnectionOptions = {
     logMessageContent: true,

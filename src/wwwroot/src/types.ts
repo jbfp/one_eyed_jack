@@ -8,8 +8,8 @@ export type Board = Tile[][];
 export type GameId = string;
 
 export interface Tile {
-    suit: any;
-    rank: any;
+    suit: Suit;
+    rank: Rank;
 }
 
 export interface Coord {

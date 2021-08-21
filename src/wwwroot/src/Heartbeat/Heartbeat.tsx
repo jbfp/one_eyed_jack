@@ -34,11 +34,7 @@ export default function Heartbeat() {
     );
 }
 
-declare global {
-    interface Window { env: any; }
-}
-
-const HEALTH_URL = `${window.env.api}/health`;
+const HEALTH_URL = '/health';
 
 const REQUEST: RequestInit = {
     cache: 'no-store',

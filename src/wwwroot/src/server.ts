@@ -25,7 +25,7 @@ interface CreateGameResponseError {
 }
 
 class Server implements CanCreateGame, CanGetBotTypes {
-  constructor(readonly endpoint: URL, readonly userName: string) { }
+  constructor(readonly userName: string) { }
 
   public async createGameAsync(form: CreateGameForm): Promise<t.GameId> {
     const url = this.buildUrl('games');
@@ -198,7 +198,7 @@ class Server implements CanCreateGame, CanGetBotTypes {
   }
 
   private buildUrl(...components: string[]): string {
-    return [this.endpoint, ...components].join('/');
+    return ['', ...components].join('/');
   }
 }
 

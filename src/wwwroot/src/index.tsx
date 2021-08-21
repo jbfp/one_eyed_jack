@@ -18,11 +18,7 @@ ReactDOM.render((
 serviceWorker.register();
 
 // Global unhandled error event handler:
-declare global {
-    interface Window { env: any; }
-}
-
-const LOG_URL = `${window.env.api}/logs`;
+const LOG_URL = `logs`;
 
 window.addEventListener('error', async (event) => {
     // Cannot serialize Error from event so we convert it to a plain object first.
@@ -54,6 +50,6 @@ window.addEventListener('error', async (event) => {
 });
 
 // Number.isSafeInteger polyfill:
-Number.isSafeInteger = Number.isSafeInteger || ((value) => {
+Number.isSafeInteger = Number.isSafeInteger || ((value: number) => {
     return Number.isInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
 });

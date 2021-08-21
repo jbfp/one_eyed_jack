@@ -13,7 +13,8 @@ export default function Login(props: RouteChildrenProps) {
     }, [userName]);
 
     if (redirectToReferrer) {
-        const { from } = props.location.state || { from: { pathname: '/' } };
+        const state = props.location.state as any;
+        const { from } = state || { from: { pathname: '/' } };
 
         if (from.pathname === '/login') {
             from.pathname = '/';

@@ -5,22 +5,24 @@ namespace Sequence.Test
 {
     public sealed class GameState_ExchangeDeadCardTest
     {
-        private static readonly GameState _default = new GameState(
+        private static readonly GameState _default = new(
             new GameInit(
-                players: ImmutableArray.Create(
+                Players: ImmutableArray.Create(
                     new Player(
                         new PlayerId(1),
-                        new PlayerHandle("test 1")
+                        new PlayerHandle("test 1"),
+                        PlayerType.User
                     ),
                     new Player(
                         new PlayerId(2),
-                        new PlayerHandle("test 2")
+                        new PlayerHandle("test 2"),
+                        PlayerType.User
                     )
                 ),
-                firstPlayerId: new PlayerId(1),
-                seed: new Seed(42),
-                boardType: BoardType.OneEyedJack,
-                numSequencesToWin: 2
+                FirstPlayerId: new PlayerId(1),
+                Seed: new Seed(42),
+                BoardType: BoardType.OneEyedJack,
+                NumberOfSequencesToWin: 2
             )
         );
 

@@ -1,34 +1,33 @@
+
 using Moq;
 using Sequence.PlayCard;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.PlayCard
 {
     public sealed class PlayCardHandler_ExchangeDeadCard
     {
-        private static readonly Player _player1 = new Player(
+        private static readonly Player _player1 = new(
             new PlayerId(1),
-            new PlayerHandle("player 1")
+            new PlayerHandle("player 1"),
+            PlayerType.User
         );
 
-        private static readonly Player _player2 = new Player(
+        private static readonly Player _player2 = new(
             new PlayerId(2),
-            new PlayerHandle("player 2")
+            new PlayerHandle("player 2"),
+            PlayerType.User
         );
 
-        private readonly Mock<IGameStateProvider> _provider = new Mock<IGameStateProvider>();
-        private readonly Mock<IGameEventStore> _store = new Mock<IGameEventStore>();
-        private readonly Mock<IRealTimeContext> _realTime = new Mock<IRealTimeContext>();
+        private readonly Mock<IGameStateProvider> _provider = new();
+        private readonly Mock<IGameEventStore> _store = new();
+        private readonly Mock<IRealTimeContext> _realTime = new();
 
         private readonly PlayCardHandler _sut;
 
         private readonly GameId _gameId = GameIdGenerator.Generate();
-        private readonly Card _deadCard = new Card(DeckNo.Two, Suit.Spades, Rank.Ten);
+        private readonly Card _deadCard = new(DeckNo.Two, Suit.Spades, Rank.Ten);
 
         private readonly GameState _game;
 
@@ -36,7 +35,7 @@ namespace Sequence.Test.PlayCard
         {
             _provider
                 .Setup(p => p.GetGameByIdAsync(_gameId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((GameState)null)
+                .ReturnsAsync((GameState?)null)
                 .Verifiable();
 
             _store
@@ -77,32 +76,6 @@ namespace Sequence.Test.PlayCard
                 Index = 2,
                 NextPlayerId = _player1.Id,
             });
-        }
-
-        [Fact]
-        public async Task ThrowsWhenArgsAreNull()
-        {
-            var player = new PlayerHandle("123");
-
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "gameId",
-                testCode: () => _sut.ExchangeDeadCardAsync(gameId: null, player, _deadCard, CancellationToken.None)
-            );
-
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => _sut.ExchangeDeadCardAsync(_gameId, player: (PlayerHandle)null, _deadCard, CancellationToken.None)
-            );
-
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => _sut.ExchangeDeadCardAsync(_gameId, player: (PlayerId)null, _deadCard, CancellationToken.None)
-            );
-
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "deadCard",
-                testCode: () => _sut.ExchangeDeadCardAsync(_gameId, player, deadCard: null, CancellationToken.None)
-            );
         }
 
         [Fact]

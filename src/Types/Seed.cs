@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence
 {
     public struct Seed
@@ -11,7 +9,7 @@ namespace Sequence
             _value = value;
         }
 
-        public Random ToRandom() => new Random(_value);
+        public Random ToRandom() => new(_value);
 
         public int ToInt32() => _value;
     }

@@ -1,8 +1,3 @@
-using Sequence.Postgres;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Sequence.GetGame
 {
     public sealed class PostgresGameProvider : IGameProvider
@@ -11,10 +6,10 @@ namespace Sequence.GetGame
 
         public PostgresGameProvider(Postgres.PostgresGameProvider gameProvider)
         {
-            _gameProvider = gameProvider ?? throw new ArgumentNullException(nameof(gameProvider));
+            _gameProvider = gameProvider;
         }
 
-        public async Task<Game> GetGameByIdAsync(
+        public async Task<Game?> GetGameByIdAsync(
             GameId gameId,
             CancellationToken cancellationToken)
         {
@@ -25,8 +20,8 @@ namespace Sequence.GetGame
                 return null;
             }
 
-            var initialState = new Sequence.GameState(tuple.Item1);
-            var gameEvents = tuple.Item2;
+            var initialState = new GameState(tuple.Value.Item1);
+            var gameEvents = tuple.Value.Item2;
             return new Game(initialState, gameEvents);
         }
     }

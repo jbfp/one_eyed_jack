@@ -1,10 +1,6 @@
-using Microsoft.Extensions.Options;
 using Sequence.CreateGame;
 using Sequence.PlayCard;
 using Sequence.Postgres;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Test.Postgres
 {
@@ -27,14 +23,9 @@ namespace Sequence.Test.Postgres
 
         protected async Task<GameId> CreateGameAsync(
             NpgsqlConnectionFactory connectionFactory,
-            NewPlayer player1 = null,
-            NewPlayer player2 = null)
+            NewPlayer? player1 = null,
+            NewPlayer? player2 = null)
         {
-            if (connectionFactory == null)
-            {
-                throw new ArgumentNullException(nameof(connectionFactory));
-            }
-
             var gameStore = new PostgresGameStore(connectionFactory);
 
             var newGame = new NewGame(
@@ -55,21 +46,6 @@ namespace Sequence.Test.Postgres
             GameId gameId,
             GameEvent gameEvent)
         {
-            if (connectionFactory == null)
-            {
-                throw new ArgumentNullException(nameof(connectionFactory));
-            }
-
-            if (gameId == null)
-            {
-                throw new ArgumentNullException(nameof(gameId));
-            }
-
-            if (gameEvent == null)
-            {
-                throw new ArgumentNullException(nameof(gameEvent));
-            }
-
             var gameEventStore = new PostgresGameEventStore(connectionFactory);
 
             await gameEventStore.AddEventAsync(gameId, gameEvent, CancellationToken.None);

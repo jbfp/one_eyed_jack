@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence
 {
     public interface IRandomFactory
@@ -9,6 +7,6 @@ namespace Sequence
 
     public sealed class SystemRandomFactory : IRandomFactory
     {
-        public Random Create() => new Random();
+        public Random Create() => new();
     }
 }

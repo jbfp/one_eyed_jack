@@ -1,34 +1,23 @@
-using Microsoft.Extensions.Logging;
 using Sequence.PlayCard;
-using Sequence.RealTime;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Bots
 {
     public sealed class BotTaskHandler
     {
         private readonly PlayCardHandler _playCardHandler;
-        private readonly ILogger _logger;
+        private readonly ILogger<BotTaskHandler> _logger;
 
         public BotTaskHandler(
             PlayCardHandler playCardHandler,
             ILogger<BotTaskHandler> logger)
         {
-            _playCardHandler = playCardHandler ?? throw new ArgumentNullException(nameof(playCardHandler));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _playCardHandler = playCardHandler;
+            _logger = logger;
         }
 
         public async Task HandleBotTaskAsync(BotTask botTask, CancellationToken cancellationToken)
         {
-            if (botTask == null)
-            {
-                throw new ArgumentNullException(nameof(botTask));
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var gameId = botTask.GameId;
@@ -50,9 +39,13 @@ namespace Sequence.Bots
 
             if (BotProvider.BotTypes.TryGetValue(botTypeKey, out var botType))
             {
-                var bot = (IBot)Activator.CreateInstance(botType, nonPublic: true);
+                if (Activator.CreateInstance(botType, nonPublic: true) is not IBot bot)
+                {
+                    _logger.LogError("Failed to create bot of type {BotType}", botType);
+                    return;
+                }
 
-                IEnumerable<GameUpdated> gameEvents = null;
+                IEnumerable<GameUpdated>? gameEvents = null;
 
                 // Make it look like the bot is thinking... :)
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
@@ -61,7 +54,7 @@ namespace Sequence.Bots
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    Move move = null;
+                    Move? move;
 
                     try
                     {

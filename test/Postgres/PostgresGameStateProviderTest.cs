@@ -1,7 +1,5 @@
 using Sequence.Postgres;
 using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.Postgres

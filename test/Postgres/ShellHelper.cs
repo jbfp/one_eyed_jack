@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 
 namespace Sequence.Test.Postgres
@@ -7,16 +6,11 @@ namespace Sequence.Test.Postgres
     {
         public static string Bash(this string command)
         {
-            if (command == null)
-            {
-                throw new ArgumentNullException(nameof(command));
-            }
-
             var escapedArgs = command.Replace("\"", "\\\"");
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "/bin/bash",
+                FileName = "bash",
                 Arguments = $"-c \"{escapedArgs}\"",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,

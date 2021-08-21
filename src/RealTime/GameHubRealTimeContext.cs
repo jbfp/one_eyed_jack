@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using Sequence.PlayCard;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Sequence.RealTime
 {
@@ -12,7 +9,7 @@ namespace Sequence.RealTime
 
         public GameHubRealTimeContext(IHubContext<GameHub, IGameHubClient> hub)
         {
-            _hub = hub ?? throw new ArgumentNullException(nameof(hub));
+            _hub = hub;
         }
 
         public Task SendGameUpdatesAsync(GameId gameId, IEnumerable<GameUpdated> updates)

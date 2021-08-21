@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence.Test
 {
     internal sealed class RandomFactoryStub : IRandomFactory

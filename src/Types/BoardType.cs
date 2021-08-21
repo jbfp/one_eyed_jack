@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence
 {
     public enum BoardType
@@ -10,24 +8,13 @@ namespace Sequence
 
     public static class BoardTypeExtensions
     {
-        public static Type ToType(this BoardType boardType)
+        public static Type ToType(this BoardType boardType) => boardType switch
         {
-            switch (boardType)
-            {
-                case BoardType.OneEyedJack:
-                    return typeof(OneEyedJackBoard);
+            BoardType.OneEyedJack => typeof(OneEyedJackBoard),
+            BoardType.Sequence => typeof(SequenceBoard),
+            _ => throw new ArgumentOutOfRangeException(nameof(boardType), boardType, null),
+        };
 
-                case BoardType.Sequence:
-                    return typeof(SequenceBoard);
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(boardType), boardType, null);
-            }
-        }
-
-        public static IBoardType Create(this BoardType boardType)
-        {
-            return (IBoardType)Activator.CreateInstance(boardType.ToType());
-        }
+        public static IBoardType? Create(this BoardType boardType) => Activator.CreateInstance(boardType.ToType()) as IBoardType;
     }
 }

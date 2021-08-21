@@ -1,25 +1,13 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
-
 namespace Sequence.Bots
 {
     internal static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddBotsFeature(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            return services
-                .AddTransient<BotTaskHandler>()
-                .AddHostedService<BotTaskObserver>()
-                .AddSingleton<PostgresListener>()
-                .AddSingleton<IHostedService>(sp => sp.GetRequiredService<PostgresListener>())
-                .AddSingleton<IObservable<BotTask>>(sp =>
-                    sp.GetRequiredService<PostgresListener>());
-        }
+        public static IServiceCollection AddBotsFeature(this IServiceCollection services) => services
+            .AddSingleton<BotTaskHandler>()
+            .AddHostedService<BotTaskObserver>()
+            .AddSingleton<PostgresListener>()
+            .AddSingleton<IHostedService>(sp => sp.GetRequiredService<PostgresListener>())
+            .AddSingleton<IObservable<BotTask>>(sp =>
+                sp.GetRequiredService<PostgresListener>());
     }
 }

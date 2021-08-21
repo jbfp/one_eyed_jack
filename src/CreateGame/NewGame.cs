@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence.CreateGame
 {
     public sealed class NewGame
@@ -13,7 +11,7 @@ namespace Sequence.CreateGame
             BoardType boardType,
             int numSequencesToWin)
         {
-            PlayerList = players ?? throw new ArgumentNullException(nameof(players));
+            PlayerList = players;
             FirstPlayerIndex = firstPlayerIndex;
             Seed = seed;
 

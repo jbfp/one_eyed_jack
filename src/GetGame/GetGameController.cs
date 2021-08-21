@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Sequence.AspNetCore;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.GetGame
 {
@@ -14,7 +11,7 @@ namespace Sequence.GetGame
 
         public GetGameController(IGameProvider provider)
         {
-            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _provider = provider;
         }
 
         [HttpGet("/boards")]
@@ -27,9 +24,9 @@ namespace Sequence.GetGame
 
         [HttpGet("/boards/{boardType}")]
         [ResponseCache(Duration = BoardCacheTime)]
-        public ActionResult Get([Enum(typeof(BoardType))]BoardType boardType)
+        public ActionResult Get([Enum(typeof(BoardType))] BoardType boardType)
         {
-            IBoardType boardTypeInstance;
+            IBoardType? boardTypeInstance;
 
             try
             {
@@ -40,7 +37,7 @@ namespace Sequence.GetGame
                 return ValidationProblem(ModelState);
             }
 
-            return Ok(boardTypeInstance.Board);
+            return Ok(boardTypeInstance!.Board);
         }
 
 

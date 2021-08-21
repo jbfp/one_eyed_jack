@@ -1,23 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Sequence.AspNetCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.GetGameList
 {
     public sealed class GetGameListController : SequenceControllerBase
     {
         private readonly GetGameListHandler _handler;
-        private readonly ILogger _logger;
 
-        public GetGameListController(GetGameListHandler handler, ILogger<GetGameListController> logger)
+        public GetGameListController(GetGameListHandler handler)
         {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _handler = handler;
         }
 
         [HttpGet("/games")]

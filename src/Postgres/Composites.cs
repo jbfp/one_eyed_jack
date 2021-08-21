@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence.Postgres
 {
@@ -10,7 +9,7 @@ namespace Sequence.Postgres
         public Suit suit;
         public Rank rank;
 
-        public static CardComposite FromCard(Card card)
+        public static CardComposite? FromCard(Card? card)
         {
             if (card == null)
             {
@@ -25,7 +24,7 @@ namespace Sequence.Postgres
             };
         }
 
-        public Card ToCard() => new Card(deckno, suit, rank);
+        public Card ToCard() => new(deckno, suit, rank);
     }
 
     internal sealed class CoordComposite
@@ -33,27 +32,27 @@ namespace Sequence.Postgres
         public short col;
         public short row;
 
-        public static CoordComposite FromCoord(Coord coord) => new CoordComposite
+        public static CoordComposite FromCoord(Coord coord) => new()
         {
             col = (short)coord.Column,
             row = (short)coord.Row,
         };
 
-        public Coord ToCoord() => new Coord(col, row);
+        public Coord ToCoord() => new(col, row);
     }
 
     internal sealed class SequenceComposite
     {
         public Team team;
-        public CoordComposite[] coords;
+        public CoordComposite[] coords = null!;
 
-        public static SequenceComposite FromSequence(Seq sequence) => new SequenceComposite
+        public static SequenceComposite FromSequence(Seq sequence) => new()
         {
             team = sequence.Team,
             coords = sequence.Coords.Select(CoordComposite.FromCoord).ToArray(),
         };
 
-        public static Seq ToSequence(SequenceComposite seq) => new Seq(
+        public static Seq ToSequence(SequenceComposite seq) => new(
             seq.team,
             seq.coords.Select(c => c.ToCoord()).ToImmutableList());
     }

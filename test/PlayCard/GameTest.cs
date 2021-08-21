@@ -1,5 +1,4 @@
 using Sequence.PlayCard;
-using System;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -7,22 +6,24 @@ namespace Sequence.Test.PlayCard
 {
     public sealed partial class GameTest
     {
-        private readonly Player _player1 = new Player(
+        private readonly Player _player1 = new(
             new PlayerId(1),
-            new PlayerHandle("player 1")
+            new PlayerHandle("player 1"),
+            PlayerType.User
         );
 
-        private readonly Player _player2 = new Player(
+        private readonly Player _player2 = new(
             new PlayerId(2),
-            new PlayerHandle("player 2")
+            new PlayerHandle("player 2"),
+            PlayerType.User
         );
 
         private readonly GameState _sut;
 
-        private readonly PlayerHandle _playerDummy = new PlayerHandle("dummy");
-        private readonly Card _cardDummy = new Card(DeckNo.One, Suit.Spades, Rank.Ace);
-        private readonly Card _oneEyedJack = new Card(DeckNo.One, Suit.Hearts, Rank.Jack);
-        private readonly Coord _coordDummy = new Coord(4, 2);
+        private readonly PlayerHandle _playerDummy = new("dummy");
+        private readonly Card _cardDummy = new(DeckNo.One, Suit.Spades, Rank.Ace);
+        private readonly Card _oneEyedJack = new(DeckNo.One, Suit.Hearts, Rank.Jack);
+        private readonly Coord _coordDummy = new(4, 2);
 
 
         public GameTest()
@@ -36,30 +37,6 @@ namespace Sequence.Test.PlayCard
                     new Seed(42),
                     BoardType.OneEyedJack,
                     2));
-        }
-
-        [Fact]
-        public void PlayCard_NullArgs()
-        {
-            Assert.Throws<ArgumentNullException>(
-                paramName: "state",
-                testCode: () => Game.PlayCard(state: null, _playerDummy, _cardDummy, _coordDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => Game.PlayCard(_sut, player: (PlayerHandle)null, _cardDummy, _coordDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => Game.PlayCard(_sut, player: (PlayerId)null, _cardDummy, _coordDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "card",
-                testCode: () => Game.PlayCard(_sut, _playerDummy, card: null, _coordDummy)
-            );
         }
 
         [Fact]

@@ -1,23 +1,20 @@
-using System;
-using System.Linq;
-
 namespace Sequence.Postgres
 {
 #pragma warning disable CS0649
     internal sealed class GameEventRow
     {
-        public GameId surrogate_game_id;
+        public GameId surrogate_game_id = null!;
         public int game_id;
         public int idx;
-        public CardComposite card_drawn;
-        public CardComposite card_used;
+        public CardComposite? card_drawn;
+        public CardComposite card_used = null!;
         public Team? chip;
-        public CoordComposite coord;
+        public CoordComposite coord = null!;
         public int id;
         public DateTimeOffset timestamp;
-        public SequenceComposite[] sequences;
-        public PlayerId by_player_id;
-        public PlayerId next_player_id;
+        public SequenceComposite[] sequences = null!;
+        public PlayerId by_player_id = null!;
+        public PlayerId? next_player_id;
         public Team? winner;
 
         public GameEvent ToGameEvent() => ToGameEvent(this);
@@ -34,7 +31,7 @@ namespace Sequence.Postgres
                 Index = row.idx,
                 NextPlayerId = row.next_player_id,
                 Sequences = row.sequences.Select(SequenceComposite.ToSequence).ToArray(),
-                Winner = row.winner,
+                Winner = row.winner
             };
         }
     }

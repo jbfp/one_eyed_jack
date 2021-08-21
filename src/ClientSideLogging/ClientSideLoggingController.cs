@@ -1,17 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
 
 namespace Sequence.ClientSideLogging
 {
     [ApiController]
     public sealed class ClientSideLoggingController : ControllerBase
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ClientSideLoggingController> _logger;
 
         public ClientSideLoggingController(ILogger<ClientSideLoggingController> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
         }
 
         [HttpPost("/logs")]
@@ -21,12 +19,5 @@ namespace Sequence.ClientSideLogging
         }
     }
 
-    public sealed class LogModel
-    {
-        public int LineNumber { get; set; }
-        public string FileName { get; set; }
-        public int ColumnNumber { get; set; }
-        public string Stack { get; set; }
-        public string Message { get; set; }
-    }
+    public sealed record LogModel(int LineNumber, string? FileName, int ColumnNumber, string? Stack, string? Message);
 }

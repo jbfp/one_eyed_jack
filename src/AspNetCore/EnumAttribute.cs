@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sequence.AspNetCore
@@ -17,6 +16,6 @@ namespace Sequence.AspNetCore
 
         public Type EnumType { get; }
 
-        public override bool IsValid(object value) => value != null && Enum.IsDefined(EnumType, value);
+        public override bool IsValid(object? value) => value != null && Enum.IsDefined(EnumType, value);
     }
 }

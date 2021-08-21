@@ -1,5 +1,4 @@
 using Sequence.CreateGame;
-using System;
 
 namespace Sequence.Test.CreateGame
 {

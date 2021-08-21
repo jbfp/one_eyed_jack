@@ -1,29 +1,28 @@
 using Sequence.PlayCard;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Xunit;
 
 namespace Sequence.Test.PlayCard
 {
     public sealed class Game_ExchangeDeadCard
     {
-        private static readonly Player _player1 = new Player(
+        private static readonly Player _player1 = new(
             new PlayerId(1),
-            new PlayerHandle("player 1")
+            new PlayerHandle("player 1"),
+            PlayerType.User
         );
 
-        private static readonly Player _player2 = new Player(
+        private static readonly Player _player2 = new(
             new PlayerId(2),
-            new PlayerHandle("player 2")
+            new PlayerHandle("player 2"),
+            PlayerType.User
         );
 
-        private static readonly PlayerHandle _playerDummy = new PlayerHandle("dummy");
-        private static readonly Card _cardDummy = new Card(DeckNo.Two, Suit.Spades, Rank.Ten);
-        private static readonly Coord _expectedCoord = new Coord(-1, -1);
+        private static readonly PlayerHandle _playerDummy = new("dummy");
+        private static readonly Card _cardDummy = new(DeckNo.Two, Suit.Spades, Rank.Ten);
+        private static readonly Coord _expectedCoord = new(-1, -1);
 
-        private static readonly GameState _sut = new GameState(
+        private static readonly GameState _sut = new(
             new GameInit(
                 ImmutableList.Create(
                     _player1,
@@ -32,30 +31,6 @@ namespace Sequence.Test.PlayCard
                 new Seed(42),
                 BoardType.OneEyedJack,
                 2));
-
-        [Fact]
-        public void ExchangeDeadCard_NullArgs()
-        {
-            Assert.Throws<ArgumentNullException>(
-                paramName: "state",
-                testCode: () => Game.ExchangeDeadCard(state: null, _playerDummy, _cardDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => Game.ExchangeDeadCard(_sut, player: (PlayerHandle)null, _cardDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => Game.ExchangeDeadCard(_sut, player: (PlayerId)null, _cardDummy)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "deadCard",
-                testCode: () => Game.ExchangeDeadCard(_sut, _playerDummy, deadCard: null)
-            );
-        }
 
         [Fact]
         public void ThrowsIfPlayerIsNotInGame()

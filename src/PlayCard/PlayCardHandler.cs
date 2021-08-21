@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.PlayCard
 {
@@ -18,9 +13,9 @@ namespace Sequence.PlayCard
             IGameEventStore store,
             IRealTimeContext realTime)
         {
-            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            _store = store ?? throw new ArgumentNullException(nameof(store));
-            _realTime = realTime ?? throw new ArgumentNullException(nameof(realTime));
+            _provider = provider;
+            _store = store;
+            _realTime = realTime;
         }
 
         public async Task<IImmutableList<Move>> GetMovesForPlayerAsync(
@@ -166,10 +161,11 @@ namespace Sequence.PlayCard
             await _store.AddEventAsync(gameId, gameEvent, cancellationToken);
             var newState = new GetGame.Game(state, gameEvent);
 
-            var _ = Task.Run(() =>
+#pragma warning disable CA2016
+            _ = Task.Run(() =>
             {
                 var broadcast = _realTime.SendGameUpdatesAsync(
-                    gameId, newState.GenerateForPlayer((PlayerId)null));
+                    gameId, newState.GenerateForPlayer((PlayerId?)null));
 
                 var tasks = state
                     .PlayerIdByIdx
@@ -181,6 +177,7 @@ namespace Sequence.PlayCard
 
                 return Task.WhenAll(tasks);
             });
+#pragma warning restore CA2016
 
             return newState.GenerateForPlayer(gameEvent.ByPlayerId);
         }

@@ -1,7 +1,5 @@
 using Sequence.CreateGame;
 using Sequence.Test.Postgres;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.CreateGame

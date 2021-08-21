@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sequence.AspNetCore;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Simulation
 {
@@ -17,7 +12,7 @@ namespace Sequence.Simulation
 
         public SimulationController(SimulationHandler handler)
         {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _handler = handler;
         }
 
         [HttpGet]
@@ -33,14 +28,14 @@ namespace Sequence.Simulation
             CancellationToken cancellationToken)
         {
             var parameters = new SimulationParams
-            {
-                BoardType = form.BoardType.Value,
-                CreatedBy = Player,
-                Players = form.Bots.Select(type => new Bot(type)).ToImmutableList(),
-                RandomFirstPlayer = form.RandomFirstPlayer,
-                Seed = new Seed(form.Seed.Value),
-                WinCondition = form.NumSequencesToWin,
-            };
+            (
+                BoardType: form.BoardType!.Value,
+                CreatedBy: Player,
+                Players: form.Bots!.Select(type => new Bot(type)).ToImmutableList(),
+                RandomFirstPlayer: form.RandomFirstPlayer!.Value,
+                Seed: new Seed(form.Seed!.Value),
+                WinCondition: form.NumSequencesToWin!.Value
+            );
 
             GameId gameId;
 
@@ -63,13 +58,13 @@ namespace Sequence.Simulation
         public BoardType? BoardType { get; set; }
 
         [Required]
-        public int NumSequencesToWin { get; set; }
+        public int? NumSequencesToWin { get; set; }
 
         [Required]
-        public string[] Bots { get; set; }
+        public string[]? Bots { get; set; }
 
         [Required]
-        public bool RandomFirstPlayer { get; set; }
+        public bool? RandomFirstPlayer { get; set; }
 
         [Required]
         public int? Seed { get; set; }
@@ -80,14 +75,14 @@ namespace Sequence.Simulation
 
             if (validationContext.ObjectInstance is SimulationForm form)
             {
-                if (!validGameSizes.Contains(Bots.Length))
+                if (!validGameSizes.Contains(form.Bots!.Length))
                 {
                     var errorMessage = "Game size is not valid.";
                     var memberNames = new[] { nameof(Bots) };
                     yield return new ValidationResult(errorMessage, memberNames);
                 }
 
-                foreach (var bot in Bots)
+                foreach (var bot in form.Bots)
                 {
                     if (!BotProvider.BotTypes.ContainsKey(bot))
                     {

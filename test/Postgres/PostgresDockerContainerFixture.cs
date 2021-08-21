@@ -3,9 +3,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Sequence.Postgres;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.Postgres
@@ -27,23 +24,22 @@ namespace Sequence.Test.Postgres
 
         public PostgresDockerContainerFixture()
         {
-            _containerId = $"docker run --rm -d -p {Port}:5432 postgres".Bash().Trim();
+            _containerId = $"docker run --rm -d -e \"POSTGRES_HOST_AUTH_METHOD=trust\" -p {Port}:5432 postgres -N 100".Bash().Trim();
 
             // Try connecting until database is ready.
             while (true)
             {
-                using (var connection = new NpgsqlConnection(_connectionString))
+                using var connection = new NpgsqlConnection(_connectionString);
+
+                try
                 {
-                    try
-                    {
-                        connection.Open();
-                        break;
-                    }
-                    catch (NpgsqlException)
-                    {
-                        // Try again.
-                        Thread.Sleep(500);
-                    }
+                    connection.Open();
+                    break;
+                }
+                catch (NpgsqlException)
+                {
+                    // Try again.
+                    Thread.Sleep(500);
                 }
             }
         }
@@ -67,7 +63,7 @@ namespace Sequence.Test.Postgres
 
             // Apply migrations.
             var postgresOptions = new PostgresOptions { ConnectionString = connectionString };
-            var options = Options.Create<PostgresOptions>(postgresOptions);
+            var options = Options.Create(postgresOptions);
             var logger = NullLogger<PostgresMigrations>.Instance;
             var migrations = new PostgresMigrations(options, logger);
             await migrations.UpgradeDatabaseAsync(cancellationToken);

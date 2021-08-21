@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence
 {
@@ -91,17 +88,13 @@ namespace Sequence
 
         public IImmutableList<IImmutableList<Card>> DealHands()
         {
-            int GetNumCards()
+            int GetNumCards() => _numPlayers switch
             {
-                switch (_numPlayers)
-                {
-                    case 2: return 7;
-                    case 3: return 6;
-                    case 4:
-                    case 6: return 5;
-                    default: throw new NotSupportedException();
-                }
-            }
+                2 => 7,
+                3 => 6,
+                4 or 6 => 5,
+                _ => throw new NotSupportedException(),
+            };
 
             IImmutableList<Card> DealHand(int n)
             {

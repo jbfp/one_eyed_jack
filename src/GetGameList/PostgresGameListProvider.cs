@@ -15,16 +15,11 @@ namespace Sequence.GetGameList
 
         public PostgresGameListProvider(NpgsqlConnectionFactory connectionFactory)
         {
-            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<GameList> GetGamesForPlayerAsync(PlayerHandle player, CancellationToken cancellationToken)
         {
-            if (player == null)
-            {
-                throw new ArgumentNullException(nameof(player));
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             ImmutableList<GameListItem> gameListItems;
@@ -47,12 +42,12 @@ namespace Sequence.GetGameList
             return new GameList(gameListItems);
         }
 
-#pragma warning disable CS0649
+#pragma warning disable CS0649, IDE1006
         private sealed class get_game_list_for_player
         {
-            public GameId game_id;
-            public PlayerHandle next_player_id;
-            public string[] opponents;
+            public GameId game_id = null!;
+            public PlayerHandle next_player_id = null!;
+            public string[] opponents = null!;
             public DateTimeOffset? last_move_at;
 
             public static GameListItem ToGameListItem(get_game_list_for_player row)
@@ -65,6 +60,6 @@ namespace Sequence.GetGameList
                 );
             }
         }
-#pragma warning restore CS0649
+#pragma warning restore CS0649, IDE1006
     }
 }

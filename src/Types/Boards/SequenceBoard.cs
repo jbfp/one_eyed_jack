@@ -1,22 +1,20 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence
 {
     internal sealed class SequenceBoard : IBoardType
     {
-        public ImmutableArray<ImmutableArray<Tile>> Board => _board;
+        public ImmutableArray<ImmutableArray<Tile?>> Board => _board;
         public IImmutableDictionary<Tile, (Coord, Coord)> CoordsByTile => _coordsByTile;
 
-        private static readonly ImmutableArray<ImmutableArray<Tile>> _board;
+        private static readonly ImmutableArray<ImmutableArray<Tile?>> _board;
         private static readonly ImmutableDictionary<Tile, (Coord, Coord)> _coordsByTile;
 
         static SequenceBoard()
         {
             var b = new[]
             {
-                new Tile[]
+                new Tile?[]
                 {
                     null,
                     new Tile(Suit.Diamonds, Rank.Six),
@@ -133,7 +131,7 @@ namespace Sequence
                     new Tile(Suit.Clubs, Rank.Five),
                     new Tile(Suit.Clubs, Rank.Six),
                 },
-                new Tile[]
+                new Tile?[]
                 {
                     null,
                     new Tile(Suit.Spades, Rank.Nine),

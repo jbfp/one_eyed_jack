@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence.PlayCard
 {
@@ -10,16 +8,6 @@ namespace Sequence.PlayCard
             GameState state,
             PlayerHandle player)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
-
-            if (player == null)
-            {
-                throw new ArgumentNullException(nameof(player));
-            }
-
             return GenerateMoves(state, state.PlayerHandleByIdx.IndexOf(player));
         }
 
@@ -27,16 +15,6 @@ namespace Sequence.PlayCard
             GameState state,
             PlayerId player)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
-
-            if (player == null)
-            {
-                throw new ArgumentNullException(nameof(player));
-            }
-
             return GenerateMoves(state, state.PlayerIdByIdx.IndexOf(player));
         }
 

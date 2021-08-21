@@ -1,8 +1,6 @@
 using Sequence.CreateGame;
 using Sequence.GetGameList;
 using Sequence.Test.Postgres;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.GetGameList
@@ -49,7 +47,6 @@ namespace Sequence.Test.GetGameList
                 Chip = Team.Red,
                 Coord = new Coord(4, 2),
                 Index = 1,
-                NextPlayerId = null
             });
 
             var sut = new PostgresGameListProvider(db);
@@ -68,8 +65,7 @@ namespace Sequence.Test.GetGameList
             // Given:
             var db = await CreateDatabaseAsync();
             var player = new PlayerHandle("Super Bot");
-            var gameId = await CreateGameAsync(db,
-                player1: new NewPlayer(player, PlayerType.Bot));
+            _ = await CreateGameAsync(db, new NewPlayer(player, PlayerType.Bot));
 
             var sut = new PostgresGameListProvider(db);
 

@@ -4,6 +4,6 @@ namespace Sequence
 {
     public interface IBot
     {
-        Move Decide(IImmutableList<Move> moves);
+        Move? Decide(IImmutableList<Move> moves);
     }
 }

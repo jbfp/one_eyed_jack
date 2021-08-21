@@ -1,29 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Sequence.AspNetCore;
-using Sequence.RealTime;
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.PlayCard
 {
     public sealed class PlayCardController : SequenceControllerBase
     {
         private readonly PlayCardHandler _handler;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger _logger;
 
-        public PlayCardController(
-            PlayCardHandler handler,
-            IMemoryCache cache,
-            ILogger<PlayCardController> logger)
+        public PlayCardController(PlayCardHandler handler)
         {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _handler = handler;
         }
 
         [HttpGet("/games/{id:guid}/moves")]
@@ -44,8 +31,8 @@ namespace Sequence.PlayCard
             CancellationToken cancellationToken)
         {
             var gameId = new GameId(id);
-            var coord = new Coord(form.Column.Value, form.Row.Value);
-            var updates = await _handler.PlayCardAsync(gameId, Player, form.Card, coord, cancellationToken);
+            var coord = new Coord(form.Column!.Value, form.Row!.Value);
+            var updates = await _handler.PlayCardAsync(gameId, Player, form.Card!, coord, cancellationToken);
             return Ok(new { updates });
         }
 
@@ -57,7 +44,7 @@ namespace Sequence.PlayCard
             CancellationToken cancellationToken)
         {
             var gameId = new GameId(id);
-            var deadCard = form.DeadCard;
+            var deadCard = form.DeadCard!;
             var updates = await _handler.ExchangeDeadCardAsync(gameId, Player, deadCard, cancellationToken);
             return Ok(new { updates });
         }
@@ -66,7 +53,7 @@ namespace Sequence.PlayCard
     public sealed class PlayCardForm
     {
         [Required]
-        public Card Card { get; set; }
+        public Card? Card { get; set; }
 
         [Required]
         public int? Column { get; set; }
@@ -78,6 +65,6 @@ namespace Sequence.PlayCard
     public sealed class ExchangeDeadCardForm
     {
         [Required]
-        public Card DeadCard { get; set; }
+        public Card? DeadCard { get; set; }
     }
 }

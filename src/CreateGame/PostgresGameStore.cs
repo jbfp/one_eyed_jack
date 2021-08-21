@@ -1,9 +1,5 @@
 using Dapper;
-using Microsoft.Extensions.Options;
 using Sequence.Postgres;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.CreateGame
 {
@@ -13,7 +9,7 @@ namespace Sequence.CreateGame
 
         public PostgresGameStore(NpgsqlConnectionFactory connectionFactory)
         {
-            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<GameId> PersistNewGameAsync(NewGame newGame, CancellationToken cancellationToken)
@@ -28,8 +24,9 @@ namespace Sequence.CreateGame
             GameId gameId;
 
             using (var connection = await _connectionFactory.CreateAndOpenAsync(cancellationToken))
-            using (var transaction = connection.BeginTransaction())
             {
+                using var transaction = connection.BeginTransaction();
+
                 try
                 {
                     int surrogateGameId = default;
@@ -126,12 +123,12 @@ namespace Sequence.CreateGame
             return gameId;
         }
 
-#pragma warning disable CS0649
-        private sealed class insert_into_game
+#pragma warning disable CS0649, IDE1006
+        private sealed record insert_into_game
         {
             public int id;
-            public GameId game_id;
+            public GameId game_id = null!;
         }
-#pragma warning restore CS0649
+#pragma warning restore CS0649, IDE1006
     }
 }

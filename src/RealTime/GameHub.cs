@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Sequence.RealTime
 {
     public sealed class GameHub : Hub<IGameHubClient>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<GameHub> _logger;
 
         public GameHub(ILogger<GameHub> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
         }
 
         public async Task Subscribe(string gameId)
@@ -26,10 +23,7 @@ namespace Sequence.RealTime
 
         public async Task Identify(int playerId)
         {
-            _logger.LogInformation(
-                "Player with ID {PlayerId} has connected",
-                playerId);
-
+            _logger.LogInformation("Player with ID {PlayerId} has connected", playerId);
             var connectionId = Context.ConnectionId;
             var groupName = playerId.ToString();
             var cancellationToken = Context.ConnectionAborted;

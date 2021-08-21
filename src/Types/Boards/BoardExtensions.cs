@@ -1,26 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Collections.Immutable;
 
 namespace Sequence
 {
-    using Board = ImmutableArray<ImmutableArray<Tile>>;
+    using Board = ImmutableArray<ImmutableArray<Tile?>>;
 
     public static class BoardExtensions
     {
         public static bool Matches(this Board board, Coord coord, Card card)
         {
-            if (board == null)
-            {
-                throw new ArgumentNullException(nameof(board));
-            }
-
-            if (card == null)
-            {
-                throw new ArgumentNullException(nameof(card));
-            }
-
             var row = coord.Row;
             var column = coord.Column;
 
@@ -51,23 +38,13 @@ namespace Sequence
             return match.Equals(card);
         }
 
-        public static Seq GetSequence(
+        public static Seq? GetSequence(
             this Board board,
             IImmutableDictionary<Coord, Team> chips,
             IImmutableSet<Coord> coordsInSequences,
             Coord coord,
             Team team)
         {
-            if (board == null)
-            {
-                throw new ArgumentNullException(nameof(board));
-            }
-
-            if (chips == null)
-            {
-                throw new ArgumentNullException(nameof(chips));
-            }
-
             var row = coord.Row;
             var col = coord.Column;
 
@@ -139,6 +116,7 @@ namespace Sequence
             var diagonal1 = range.Select(d => new Coord(col + d, row + d));
             var diagonal2 = range.Select(d => new Coord(col + d, row - d));
 
+#pragma warning disable IDE0018
             IImmutableList<Coord> coords;
 
             if (TrySequence(vertical, out coords) ||
@@ -148,6 +126,7 @@ namespace Sequence
             {
                 return new Seq(team, coords);
             }
+#pragma warning restore IDE0018
 
             return null;
         }
@@ -159,16 +138,6 @@ namespace Sequence
             Coord coord,
             Team team)
         {
-            if (board == null)
-            {
-                throw new ArgumentNullException(nameof(board));
-            }
-
-            if (chips == null)
-            {
-                throw new ArgumentNullException(nameof(chips));
-            }
-
             var row = coord.Row;
             var col = coord.Column;
 

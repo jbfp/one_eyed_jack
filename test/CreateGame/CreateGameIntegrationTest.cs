@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sequence.Test.Postgres;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.CreateGame
@@ -34,10 +32,9 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await UnauthorizedClient.PostAsJsonAsync(GamesBasePath, body))
-            {
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
+            using var response = await UnauthorizedClient.PostAsJsonAsync(GamesBasePath, body);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         [Fact]
@@ -47,19 +44,15 @@ namespace Sequence.Test.CreateGame
             {
                 boardType = 0,
                 numSequencesToWin = 2,
-                opponents = new[]
-                {
-                    new { name = "test", type = "User" },
-                },
+                opponents = new[] { new { name = "test", type = "User" } },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-                Assert.NotNull(response.Headers.Location);
-                Assert.NotNull(response.Content);
-                Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.NotNull(response.Headers.Location);
+            Assert.NotNull(response.Content);
+            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
         }
 
         [Theory]
@@ -78,10 +71,9 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Theory]
@@ -101,10 +93,9 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Theory]
@@ -124,10 +115,9 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Fact]
@@ -146,14 +136,13 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-                Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-                var json = await response.Content.ReadAsStringAsync();
-                var obj = JsonConvert.DeserializeAnonymousType(json, new { error = "" });
-                Assert.Equal("Game size is invalid.", obj.error);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+            var json = await response.Content.ReadAsStringAsync();
+            var obj = JsonConvert.DeserializeAnonymousType(json, new { error = "" });
+            Assert.Equal("Game size is invalid.", obj.error);
         }
 
         [Fact]
@@ -161,7 +150,7 @@ namespace Sequence.Test.CreateGame
         {
             var body = new
             {
-                BoardType = 0,
+                boardType = 0,
                 numSequencesToWin = 3,
                 opponents = new[]
                 {
@@ -169,34 +158,31 @@ namespace Sequence.Test.CreateGame
                 },
             };
 
-            using (var response = await PostAsync(body))
-            {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-                Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-                var json = await response.Content.ReadAsStringAsync();
-                var obj = JsonConvert.DeserializeAnonymousType(json, new { error = "" });
-                Assert.Equal("Duplicate players are not allowed.", obj.error);
-            }
+            using var response = await PostAsync(body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+            var json = await response.Content.ReadAsStringAsync();
+            var obj = JsonConvert.DeserializeAnonymousType(json, new { error = "" });
+            Assert.Equal("Duplicate players are not allowed.", obj.error);
         }
 
         [Fact]
         public async Task BotRouteIsProtected()
         {
-            using (var response = await UnauthorizedClient.GetAsync(BotsBasePath))
-            {
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
+            using var response = await UnauthorizedClient.GetAsync(BotsBasePath);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         [Fact]
         public async Task GetBotsReturnsCorrectResult()
         {
-            using (var response = await AuthorizedClient.GetAsync(BotsBasePath))
-            {
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var json = JObject.Parse(await response.Content.ReadAsStringAsync());
-                Assert.NotEmpty(json["botTypes"]);
-            }
+            using var response = await AuthorizedClient.GetAsync(BotsBasePath);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.NotEmpty(json["botTypes"]);
         }
 
         private async Task<HttpResponseMessage> PostAsync<T>(T value)

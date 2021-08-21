@@ -1,9 +1,5 @@
 using Dapper;
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Postgres
 {
@@ -13,10 +9,10 @@ namespace Sequence.Postgres
 
         public PostgresGameProvider(NpgsqlConnectionFactory connectionFactory)
         {
-            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            _connectionFactory = connectionFactory;
         }
 
-        public async Task<Tuple<GameInit, GameEvent[]>> GetById(
+        public async Task<(GameInit, GameEvent[])?> GetById(
             GameId gameId,
             CancellationToken cancellationToken)
         {
@@ -31,8 +27,9 @@ namespace Sequence.Postgres
             GameEvent[] gameEvents;
 
             using (var connection = await _connectionFactory.CreateAndOpenAsync(cancellationToken))
-            using (var transaction = connection.BeginTransaction())
             {
+                using var transaction = connection.BeginTransaction();
+
                 {
                     get_game_init_by_id[] rows;
 
@@ -71,11 +68,11 @@ namespace Sequence.Postgres
                     }
 
                     init = new GameInit(
-                        players: rows.Select(row => new Player(row.player_id, row.player_handle, row.player_type)).ToImmutableList(),
-                        firstPlayerId: rows[0].first_player_id,
-                        seed: rows[0].seed,
-                        boardType: rows[0].board_type,
-                        numSequencesToWin: rows[0].num_sequences_to_win
+                        Players: rows.Select(row => new Player(row.player_id, row.player_handle, row.player_type)).ToImmutableList(),
+                        FirstPlayerId: rows[0].first_player_id,
+                        Seed: rows[0].seed,
+                        BoardType: rows[0].board_type,
+                        NumberOfSequencesToWin: rows[0].num_sequences_to_win
                     );
                 }
 
@@ -96,7 +93,7 @@ namespace Sequence.Postgres
                         WHERE g.game_id = @gameId
                         ORDER BY idx ASC;";
 
-                    var parameters = new { gameId = gameId };
+                    var parameters = new { gameId };
 
                     var command = new CommandDefinition(
                         commandText,
@@ -115,20 +112,20 @@ namespace Sequence.Postgres
                 await transaction.CommitAsync(cancellationToken);
             }
 
-            return Tuple.Create(init, gameEvents);
+            return (init, gameEvents);
         }
 
-#pragma warning disable CS0649
+#pragma warning disable CS0649, IDE1006
         private sealed class get_game_init_by_id
         {
-            public PlayerId first_player_id;
-            public PlayerId player_id;
-            public PlayerHandle player_handle;
+            public PlayerId first_player_id = null!;
+            public PlayerId player_id = null!;
+            public PlayerHandle player_handle = null!;
             public PlayerType player_type;
             public BoardType board_type;
             public int num_sequences_to_win;
             public Seed seed;
         }
-#pragma warning restore CS0649
+#pragma warning restore CS0649, IDE1006
     }
 }

@@ -1,17 +1,9 @@
 using Dapper;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Npgsql;
 using Sequence.Postgres;
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Bots
 {
@@ -20,10 +12,9 @@ namespace Sequence.Bots
         private readonly NpgsqlConnectionFactory _connectionFactory;
         private readonly IObservable<GameId> _newGameObservable;
         private readonly IObservable<(GameId, GameEvent)> _newGameEventObservable;
-        private readonly ILogger _logger;
+        private readonly ILogger<PostgresListener> _logger;
 
-        private readonly ReplaySubject<BotTask> _subject = new ReplaySubject<BotTask>(
-            window: TimeSpan.FromSeconds(30));
+        private readonly ReplaySubject<BotTask> _subject = new(window: TimeSpan.FromSeconds(30));
 
         public PostgresListener(
             NpgsqlConnectionFactory connectionFactory,
@@ -31,10 +22,10 @@ namespace Sequence.Bots
             IObservable<(GameId, GameEvent)> newGameEventObservable,
             ILogger<PostgresListener> logger)
         {
-            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
-            _newGameObservable = newGameObservable ?? throw new ArgumentNullException(nameof(newGameObservable));
-            _newGameEventObservable = newGameEventObservable ?? throw new ArgumentNullException(nameof(newGameEventObservable));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _connectionFactory = connectionFactory;
+            _newGameObservable = newGameObservable;
+            _newGameEventObservable = newGameEventObservable;
+            _logger = logger;
         }
 
         public IDisposable Subscribe(IObserver<BotTask> observer)
@@ -84,18 +75,18 @@ namespace Sequence.Bots
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Unhandled exception. Restarting loop");
-                await Task.Delay(TimeSpan.FromSeconds(10)); // Give system a chance to recover.
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken); // Give system a chance to recover.
                 await ExecuteAsync(stoppingToken);
             }
         }
 
         private async Task<IImmutableList<BotTask>> GetInitialBotTasksAsync(CancellationToken cancellationToken)
         {
-            using (var connection = await _connectionFactory.CreateAndOpenAsync(cancellationToken))
-            {
-                _logger.LogInformation("Getting initial bot tasks");
+            _logger.LogInformation("Getting initial bot tasks");
 
-                const string sql = @"
+            using var connection = await _connectionFactory.CreateAndOpenAsync(cancellationToken);
+
+            const string sql = @"
                     SELECT
                       DISTINCT(g.game_id)
                     , gp.id
@@ -133,18 +124,17 @@ namespace Sequence.Bots
                     WHERE gp.player_type = 'bot'
                     AND ge.next_player_id = gp.id;";
 
-                var command = new CommandDefinition(
-                    commandText: sql,
-                    cancellationToken: cancellationToken);
+            var command = new CommandDefinition(
+                commandText: sql,
+                cancellationToken: cancellationToken);
 
-                var rows = (await connection.QueryAsync<LatestBotTaskForGame>(command)).AsList();
+            var rows = (await connection.QueryAsync<LatestBotTaskForGame>(command)).AsList();
 
-                _logger.LogInformation("Got {NumTasks} initial bot tasks", rows.Count);
+            _logger.LogInformation("Got {NumTasks} initial bot tasks", rows.Count);
 
-                return rows
-                    .Select(row => new BotTask(row.game_id, new Player(row.id, row.player_id, PlayerType.Bot)))
-                    .ToImmutableList();
-            }
+            return rows
+                .Select(row => new BotTask(row.game_id, new Player(row.id, row.player_id, PlayerType.Bot)))
+                .ToImmutableList();
         }
 
         private IObservable<BotTask> GetLatestBotTaskForGame(GameId gameId)
@@ -220,9 +210,9 @@ namespace Sequence.Bots
 #pragma warning disable CS0649
         private sealed class LatestBotTaskForGame
         {
-            public GameId game_id;
-            public PlayerId id;
-            public PlayerHandle player_id;
+            public GameId game_id = null!;
+            public PlayerId id = null!;
+            public PlayerHandle player_id = null!;
         }
 #pragma warning restore CS0649
     }

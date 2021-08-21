@@ -1,116 +1,94 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Sequence.GetGame;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sequence.AspNetCore
 {
-    internal sealed class GameIdJsonConverter : JsonConverter
+    internal sealed class GameIdJsonConverter : JsonConverter<GameId>
     {
-        public override bool CanRead { get; } = true;
-        public override bool CanWrite { get; } = true;
-
-        public override bool CanConvert(Type objectType) => typeof(GameId) == objectType;
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override GameId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.ValueType == typeof(string) && reader.Value is string str)
+            if (reader.TryGetGuid(out var value))
             {
-                return new GameId(Guid.Parse(str));
+                return new GameId(value);
             }
 
             return null;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, GameId value, JsonSerializerOptions options)
         {
-            writer.WriteValue(value.ToString());
+            writer.WriteStringValue(value.Value);
         }
     }
 
-    internal sealed class PlayerHandleJsonConverter : JsonConverter
+    internal sealed class PlayerHandleJsonConverter : JsonConverter<PlayerHandle>
     {
-        public override bool CanRead { get; } = true;
-        public override bool CanWrite { get; } = true;
-
-        public override bool CanConvert(Type objectType) => typeof(PlayerHandle) == objectType;
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override PlayerHandle? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.ValueType == typeof(string) && reader.Value is string str)
+            var value = reader.GetString();
+
+            if (value is null)
             {
-                return new PlayerHandle(str);
+                return null;
+            }
+
+            return new PlayerHandle(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, PlayerHandle value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.Value);
+        }
+    }
+
+    internal sealed class PlayerIdJsonConverter : JsonConverter<PlayerId>
+    {
+        public override PlayerId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TryGetInt32(out var value))
+            {
+                return new PlayerId(value);
             }
 
             return null;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, PlayerId value, JsonSerializerOptions options)
         {
-            writer.WriteValue(value.ToString());
+            writer.WriteNumberValue(value.Value);
         }
     }
 
-    internal sealed class PlayerIdJsonConverter : JsonConverter
+    internal sealed class TileJsonConverter : JsonConverter<Tile>
     {
-        public override bool CanRead { get; } = true;
-        public override bool CanWrite { get; } = true;
-
-        public override bool CanConvert(Type objectType) => typeof(PlayerId) == objectType;
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.ValueType == typeof(long) && reader.Value is long x)
-            {
-                return new PlayerId((int)x);
-            }
-
-            return null;
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteValue(((PlayerId)value).ToInt32());
-        }
-    }
-
-    internal sealed class TileJsonConverter : JsonConverter
-    {
-        public override bool CanRead { get; } = false;
-        public override bool CanWrite { get; } = true;
-
-        public override bool CanConvert(Type objectType) => typeof((Suit, Rank)?) == objectType;
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override Tile? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, Tile value, JsonSerializerOptions options)
         {
             if (value is null)
             {
-                writer.WriteNull();
+                writer.WriteNullValue();
             }
-            else if (value is ValueTuple<Suit, Rank> tile)
+            else if (value is (Suit, Rank) tile)
             {
                 writer.WriteStartArray();
-                serializer.Serialize(writer, tile.Item1);
-                serializer.Serialize(writer, tile.Item2);
+                writer.WriteStringValue(tile.Suit.ToString());
+                writer.WriteStringValue(tile.Rank.ToString());
                 writer.WriteEndArray();
             }
             else
             {
-                throw new JsonSerializationException($"Cannot write value: '{value}'.");
+                throw new NotSupportedException();
             }
         }
     }
 
-    internal sealed class GameEventConverter : JsonConverter
+    internal sealed class GameEventConverter : JsonConverter<GameEvent>
     {
         private static readonly ImmutableDictionary<Type, string> _keyByType;
         private static readonly ImmutableDictionary<Type, PropertyInfo[]> _propertiesByType;
@@ -151,42 +129,34 @@ namespace Sequence.AspNetCore
             }
         }
 
-        public override bool CanRead => false;
-        public override bool CanWrite => true;
+        public override bool CanConvert(Type objectType) => typeof(IGameEvent).IsAssignableFrom(objectType);
 
-        public override bool CanConvert(Type objectType)
-        {
-            return typeof(IGameEvent) != objectType
-                && typeof(IGameEvent).IsAssignableFrom(objectType);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override GameEvent? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, GameEvent value, JsonSerializerOptions options)
         {
             var type = value.GetType();
             var name = _keyByType[type];
-            var contractResolver = (DefaultContractResolver)serializer.ContractResolver;
+            var namingPolicy = JsonNamingPolicy.CamelCase;
             var properties = _propertiesByType[type]
                 .Select(p => (p.Name, Value: p.GetValue(value)))
                 .ToDictionary(
-                    p => contractResolver.GetResolvedPropertyName(p.Name),
+                    p => namingPolicy.ConvertName(p.Name),
                     p => p.Value);
 
             writer.WriteStartObject();
-            writer.WritePropertyName("kind");
-            writer.WriteValue(name);
+            writer.WriteString("kind", name);
 
             foreach (var property in properties)
             {
                 writer.WritePropertyName(property.Key);
-                serializer.Serialize(writer, property.Value);
+                JsonSerializer.Serialize(writer, property.Value, type, options);
             }
 
-            writer.WriteEnd();
+            writer.WriteEndObject();
         }
     }
 }

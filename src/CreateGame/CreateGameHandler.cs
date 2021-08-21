@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Immutable;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Sequence.CreateGame
 {
     public sealed class CreateGameHandler
@@ -13,8 +7,8 @@ namespace Sequence.CreateGame
 
         public CreateGameHandler(IRandomFactory randomFactory, IGameStore gameStore)
         {
-            _randomFactory = randomFactory ?? throw new ArgumentNullException(nameof(randomFactory));
-            _gameStore = gameStore ?? throw new ArgumentNullException(nameof(gameStore));
+            _randomFactory = randomFactory;
+            _gameStore = gameStore;
         }
 
         public async Task<GameId> CreateGameAsync(
@@ -23,11 +17,6 @@ namespace Sequence.CreateGame
             int numSequencesToWin,
             CancellationToken cancellationToken)
         {
-            if (players == null)
-            {
-                throw new ArgumentNullException(nameof(players));
-            }
-
             var random = _randomFactory.Create();
             var seed = new Seed(random.Next());
             var firstPlayerIdx = players.RandomFirstPlayer ? random.Next(players.Players.Count) : 0;

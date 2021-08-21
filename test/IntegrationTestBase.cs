@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Sequence.Bots;
-using Sequence.Postgres;
 using Sequence.Test.Postgres;
 using Serilog;
-using System;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test
@@ -20,13 +14,11 @@ namespace Sequence.Test
     {
         protected const string DefaultUserName = "test_player";
 
-        private readonly BotTaskObservableStub _botTaskObservable = new BotTaskObservableStub();
-
         protected IntegrationTestBase(
             PostgresDockerContainerFixture fixture,
             WebApplicationFactory<Startup> factory)
         {
-            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            Factory = factory;
 
             Factory = Factory.WithWebHostBuilder(builder =>
             {
@@ -34,7 +26,7 @@ namespace Sequence.Test
 
                 builder.ConfigureTestServices(services =>
                 {
-                    services.AddSingleton<NpgsqlConnectionFactory>(db);
+                    services.AddSingleton(db);
                 }).UseSetting("Postgres:ConnectionString", db.ConnectionString)
                 .UseSerilog((ctx, conf) => conf.Filter.ByIncludingOnly(_ => false));
             });
@@ -59,15 +51,12 @@ namespace Sequence.Test
             {
                 boardType = 0,
                 numSequencesToWin = 1,
-                opponents = new[]
-                {
-                    new { name = opponent, type = 0 },
-                },
+                opponents = new[] { new { name = opponent, type = "User" } },
             };
 
             var response = await AuthorizedClient.PostAsJsonAsync("/games", form);
 
-            return response.Headers.Location;
+            return response.Headers.Location!;
         }
 
         private sealed class BotTaskObservableStub : IObservable<BotTask>

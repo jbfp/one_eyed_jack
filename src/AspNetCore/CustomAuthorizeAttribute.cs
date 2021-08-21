@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System;
 
 namespace Sequence.AspNetCore
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     internal sealed class CustomAuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         public void OnAuthorization(AuthorizationFilterContext context)

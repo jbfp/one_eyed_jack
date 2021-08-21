@@ -1,39 +1,18 @@
 using Moq;
 using Sequence.GetGameList;
-using System;
 using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.GetGameList
 {
     public sealed class GetGameListHandlerTest
     {
-        [Fact]
-        public void Constructor_NullArgs()
-        {
-            Assert.Throws<ArgumentNullException>(
-                paramName: "provider",
-                () => new GetGameListHandler(provider: null)
-            );
-        }
-
-        private readonly Mock<IGameListProvider> _provider = new Mock<IGameListProvider>();
+        private readonly Mock<IGameListProvider> _provider = new();
         private readonly GetGameListHandler _sut;
 
         public GetGameListHandlerTest()
         {
             _sut = new GetGameListHandler(_provider.Object);
-        }
-
-        [Fact]
-        public async Task ThrowsWhenPlayerIsNull()
-        {
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "player",
-                testCode: () => _sut.GetGamesForPlayerAsync(player: null, CancellationToken.None)
-            );
         }
 
         [Fact]

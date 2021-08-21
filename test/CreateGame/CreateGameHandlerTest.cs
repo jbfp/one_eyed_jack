@@ -1,34 +1,12 @@
 using Moq;
-using Sequence;
 using Sequence.CreateGame;
-using System;
-using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.CreateGame
 {
     public sealed class CreateGameHandlerTest
     {
-        [Fact]
-        public void Constructor_NullArgs()
-        {
-            var randomFactory = Mock.Of<IRandomFactory>();
-            var gameStore = Mock.Of<IGameStore>();
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "randomFactory",
-                () => new CreateGameHandler(randomFactory: null, gameStore)
-            );
-
-            Assert.Throws<ArgumentNullException>(
-                paramName: "gameStore",
-                () => new CreateGameHandler(randomFactory, gameStore: null)
-            );
-        }
-
-        private static readonly PlayerList _twoPlayers = new PlayerList(
+        private static readonly PlayerList _twoPlayers = new(
             randomFirstPlayer: false,
             TestPlayer.Get,
             TestPlayer.Get);
@@ -37,8 +15,8 @@ namespace Sequence.Test.CreateGame
 
         private static readonly int _numSequencesToWin = 2;
 
-        private readonly Mock<IRandomFactory> _randomFactory = new Mock<IRandomFactory>();
-        private readonly Mock<IGameStore> _store = new Mock<IGameStore>();
+        private readonly Mock<IRandomFactory> _randomFactory = new();
+        private readonly Mock<IGameStore> _store = new();
         private readonly CreateGameHandler _sut;
 
         public CreateGameHandlerTest()
@@ -48,15 +26,6 @@ namespace Sequence.Test.CreateGame
                 .Returns(new Random(42));
 
             _sut = new CreateGameHandler(_randomFactory.Object, _store.Object);
-        }
-
-        [Fact]
-        public async Task CreateGameAsync_NullArgs()
-        {
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                paramName: "players",
-                testCode: () => _sut.CreateGameAsync(null, _boardType, _numSequencesToWin, CancellationToken.None)
-            );
         }
 
         [Fact]

@@ -1,9 +1,7 @@
-using System;
-
 namespace Sequence.Test
 {
     internal static class GameIdGenerator
     {
-        public static GameId Generate() => new GameId(Guid.NewGuid());
+        public static GameId Generate() => new(Guid.NewGuid());
     }
 }

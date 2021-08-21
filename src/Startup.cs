@@ -1,47 +1,32 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using Sequence.AspNetCore;
 using Sequence.RealTime;
-using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sequence
 {
-    public sealed class Startup : IStartup
+    public sealed class Startup
     {
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
         private readonly IConfiguration _configuration;
 
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
-            _env = env ?? throw new ArgumentNullException(nameof(env));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _env = env;
+            _configuration = configuration;
         }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
-            JsonConvert.DefaultSettings = () =>
-            {
-                var settings = new JsonSerializerSettings();
-                ConfigureJsonSerializerSettings(settings);
-                return settings;
-            };
-
             services
-                .AddMvc()
-                .AddJsonOptions(options => ConfigureJsonSerializerSettings(options.SerializerSettings))
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddControllers()
+                .AddJsonOptions(options => ConfigureJsonOptions(options.JsonSerializerOptions));
 
             services
                 .AddSignalR()
-                .AddJsonProtocol(options => ConfigureJsonSerializerSettings(options.PayloadSerializerSettings));
+                .AddJsonProtocol(options => ConfigureJsonOptions(options.PayloadSerializerOptions));
 
             services.AddHealthChecks();
             services.AddMemoryCache();
@@ -52,8 +37,6 @@ namespace Sequence
             }
 
             services.AddSequence(_configuration);
-
-            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -79,18 +62,27 @@ namespace Sequence
             }
 
             app.UseHealthChecks("/health");
-            app.UseSignalR(builder => builder.MapHub<GameHub>("/game-hub"));
-            app.UseMvc();
+
+            app.UseRouting();
+
+            app.UseEndpoints(builder =>
+            {
+                builder.MapControllers();
+                builder.MapHub<GameHub>("/game-hub");
+            });
         }
 
-        private static void ConfigureJsonSerializerSettings(JsonSerializerSettings settings)
+        private static void ConfigureJsonOptions(JsonSerializerOptions options)
         {
-            settings.Converters.Add(new GameEventConverter());
-            settings.Converters.Add(new GameIdJsonConverter());
-            settings.Converters.Add(new PlayerHandleJsonConverter());
-            settings.Converters.Add(new PlayerIdJsonConverter());
-            settings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
-            settings.Converters.Add(new TileJsonConverter());
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+            var converters = options.Converters;
+            converters.Add(new JsonStringEnumConverter());
+            converters.Add(new GameEventConverter());
+            converters.Add(new GameIdJsonConverter());
+            converters.Add(new PlayerHandleJsonConverter());
+            converters.Add(new PlayerIdJsonConverter());
+            converters.Add(new TileJsonConverter());
         }
     }
 }

@@ -1,5 +1,3 @@
-using System;
-
 namespace Sequence.PlayCard
 {
     public sealed class PlayCardFailedException : Exception

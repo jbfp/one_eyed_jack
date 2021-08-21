@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence.GetGame
 {
@@ -12,8 +9,8 @@ namespace Sequence.GetGame
 
         public Game(GameState initialState, params GameEvent[] gameEvents)
         {
-            _initialState = initialState ?? throw new ArgumentNullException(nameof(initialState));
-            _gameEvents = gameEvents ?? throw new ArgumentNullException(nameof(gameEvents));
+            _initialState = initialState;
+            _gameEvents = gameEvents;
         }
 
         public InitialGameState Init(PlayerHandle playerHandle)
@@ -32,23 +29,23 @@ namespace Sequence.GetGame
             var isInGame = playerIdx != -1;
 
             return new InitialGameState(
-                boardType: FromIBoardType(state.BoardType),
-                firstPlayerId: state.CurrentPlayerId,
-                hand: isInGame ? state.PlayerHandByIdx[playerIdx] : null,
-                numCardsInDeck: state.Deck.Count,
-                playerHandle: isInGame ? state.PlayerHandleByIdx[playerIdx] : null,
-                playerId: isInGame ? state.PlayerIdByIdx[playerIdx] : null,
-                players: Enumerable.Range(0, state.NumberOfPlayers).Select(idx => new Player
-                {
-                    Handle = state.PlayerHandleByIdx[idx],
-                    Id = state.PlayerIdByIdx[idx],
-                    NumberOfCards = state.PlayerHandByIdx[idx].Count,
+                BoardType: FromIBoardType(state.BoardType),
+                FirstPlayerId: state.CurrentPlayerId,
+                Hand: isInGame ? state.PlayerHandByIdx[playerIdx] : null,
+                NumCardsInDeck: state.Deck.Count,
+                PlayerHandle: isInGame ? state.PlayerHandleByIdx[playerIdx] : null,
+                PlayerId: isInGame ? state.PlayerIdByIdx[playerIdx] : null,
+                Players: Enumerable.Range(0, state.NumberOfPlayers).Select(idx => new Player
+                (
+                    Handle: state.PlayerHandleByIdx[idx],
+                    Id: state.PlayerIdByIdx[idx],
+                    NumberOfCards: state.PlayerHandByIdx[idx].Count,
                     // Shift teams so that the calling player always appears as red.
-                    Team = isInGame ? GetTeam(playerIdx, idx) : GetTeam(idx),
-                    Type = state.PlayerTypeByIdx[idx],
-                }).ToImmutableList(),
-                team: isInGame ? Team.Red : (Team?)null,
-                winCondition: state.WinCondition
+                    Team: isInGame ? GetTeam(playerIdx, idx) : GetTeam(idx),
+                    Type: state.PlayerTypeByIdx[idx]
+                )).ToImmutableList(),
+                Team: isInGame ? Team.Red : (Team?)null,
+                WinCondition: state.WinCondition
             );
         }
 
@@ -57,8 +54,13 @@ namespace Sequence.GetGame
             return GenerateForPlayer(_initialState.PlayerHandleByIdx.IndexOf(playerHandle));
         }
 
-        public IEnumerable<GameUpdated> GenerateForPlayer(PlayerId playerId)
+        public IEnumerable<GameUpdated> GenerateForPlayer(PlayerId? playerId)
         {
+            if (playerId is null)
+            {
+                return GenerateForPlayer(-1);
+            }
+
             return GenerateForPlayer(_initialState.PlayerIdByIdx.IndexOf(playerId));
         }
 
@@ -71,13 +73,7 @@ namespace Sequence.GetGame
                 var previousState = state;
                 var currentState = previousState.Apply(gameEvent);
                 var events = GetEvents(playerIdx, gameEvent, previousState, currentState);
-
-                yield return new GameUpdated
-                {
-                    GameEvents = events.ToArray(),
-                    Version = gameEvent.Index,
-                };
-
+                yield return new GameUpdated(events.ToArray(), gameEvent.Index);
                 state = currentState;
             }
         }
@@ -85,8 +81,8 @@ namespace Sequence.GetGame
         private IEnumerable<IGameEvent> GetEvents(
             int playerIdx,
             GameEvent gameEvent,
-            Sequence.GameState previousState,
-            Sequence.GameState currentState)
+            GameState previousState,
+            GameState currentState)
         {
             var isInGame = playerIdx != -1;
             var byPlayerId = gameEvent.ByPlayerId;
@@ -182,19 +178,11 @@ namespace Sequence.GetGame
             return _initialState.PlayerTeamByIdx[playerIdx];
         }
 
-        private static BoardType FromIBoardType(IBoardType boardType)
+        private static BoardType FromIBoardType(IBoardType boardType) => boardType switch
         {
-            switch (boardType)
-            {
-                case OneEyedJackBoard b1:
-                    return BoardType.OneEyedJack;
-
-                case SequenceBoard b2:
-                    return BoardType.Sequence;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(boardType), boardType.GetType(), null);
-            }
-        }
+            OneEyedJackBoard => BoardType.OneEyedJack,
+            SequenceBoard => BoardType.Sequence,
+            _ => throw new ArgumentOutOfRangeException(nameof(boardType), boardType.GetType(), null),
+        };
     }
 }

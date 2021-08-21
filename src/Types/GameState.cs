@@ -1,12 +1,10 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Sequence
 {
     public sealed class GameState
     {
-        private static readonly Coord _deadCardExchangedCoord = new Coord(-1, -1);
+        private static readonly Coord _deadCardExchangedCoord = new(-1, -1);
 
         private static readonly ImmutableDictionary<int, ImmutableArray<Team>> _teams =
             ImmutableDictionary<int, ImmutableArray<Team>>
@@ -22,16 +20,6 @@ namespace Sequence
 
         public GameState(GameInit init, params GameEvent[] gameEvents)
         {
-            if (init == null)
-            {
-                throw new ArgumentNullException(nameof(init));
-            }
-
-            if (gameEvents == null)
-            {
-                throw new ArgumentNullException(nameof(gameEvents));
-            }
-
             _init = init;
 
             var numPlayers = init.Players.Count;
@@ -49,7 +37,7 @@ namespace Sequence
                 PlayerTypeByIdx = PlayerTypeByIdx.Add(player.Type);
             }
 
-            BoardType = init.BoardType.Create();
+            BoardType = init.BoardType.Create()!;
             CurrentPlayerId = init.FirstPlayerId;
             Deck = deck.ToImmutableList();
             NumberOfPlayers = numPlayers;
@@ -69,7 +57,7 @@ namespace Sequence
                 }
 
                 PlayerHandByIdx = PlayerHandByIdx.SetItem(playerIdx, playerHand);
-                CurrentPlayerId = gameEvent.NextPlayerId;
+                CurrentPlayerId = gameEvent.NextPlayerId!;
                 Discards = Discards.Add(cardUsed);
                 GameEvents = GameEvents.Add(gameEvent);
                 Version = gameEvent.Index;

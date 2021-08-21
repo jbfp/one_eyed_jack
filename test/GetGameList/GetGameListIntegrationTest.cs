@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json.Linq;
-using Sequence.GetGameList;
 using Sequence.Test.Postgres;
-using System;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sequence.Test.GetGameList
@@ -25,20 +21,16 @@ namespace Sequence.Test.GetGameList
         [Fact]
         public async Task RoutesAreProtected()
         {
-            using (var response = await UnauthorizedClient.GetAsync(BasePath))
-            {
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
+            using var response = await UnauthorizedClient.GetAsync(BasePath);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
 
         [Fact]
         public async Task GetGamesReturnsOk()
         {
-            using (var response = await AuthorizedClient.GetAsync("/games"))
-            {
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+            using var response = await AuthorizedClient.GetAsync("/games");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

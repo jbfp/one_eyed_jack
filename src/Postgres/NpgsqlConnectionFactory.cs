@@ -1,9 +1,6 @@
 using Dapper;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sequence.Postgres
 {
@@ -21,17 +18,17 @@ namespace Sequence.Postgres
             NpgsqlConnection.GlobalTypeMapper.MapComposite<CoordComposite>("coord");
             NpgsqlConnection.GlobalTypeMapper.MapComposite<SequenceComposite>("sequence");
 
-            SqlMapper.AddTypeHandler<GameId>(new GameIdTypeHandler());
-            SqlMapper.AddTypeHandler<PlayerHandle>(new PlayerHandleTypeHandler());
-            SqlMapper.AddTypeHandler<PlayerId>(new PlayerIdTypeHandler());
-            SqlMapper.AddTypeHandler<Seed>(new SeedTypeHandler());
+            SqlMapper.AddTypeHandler(new GameIdTypeHandler());
+            SqlMapper.AddTypeHandler(new PlayerHandleTypeHandler());
+            SqlMapper.AddTypeHandler(new PlayerIdTypeHandler());
+            SqlMapper.AddTypeHandler(new SeedTypeHandler());
         }
 
         private readonly IOptions<PostgresOptions> _options;
 
         public NpgsqlConnectionFactory(IOptions<PostgresOptions> options)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _options = options;
         }
 
         public string ConnectionString => _options.Value.ConnectionString;

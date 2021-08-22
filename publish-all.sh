@@ -14,13 +14,13 @@ ls ./test/*.csproj | xargs -L1 -P 0 dotnet test -c Release -v q --no-build
 cd ./src
 
 echo Cleaning previous publish output...
-rm -rf ./bin/Release/netcoreapp2.2/publish
+rm -rf ./bin/Release/net6/publish
 
 $script_path/publish-frontend.sh
 
 echo Publishing API...
-dotnet publish -c Release -v q
-cd ./bin/Release/netcoreapp2.2/publish/
+dotnet publish -c Release -v q --no-build
+cd ./bin/Release/net6/publish/
 
 echo Copying files...
 rsync -ru --progress --exclude="wwwroot" --exclude="logs" ./* jbfp@jbfp.dk:/opt/sequence
@@ -31,4 +31,3 @@ echo Restarting server processes...
 ssh -t jbfp@jbfp.dk "sudo systemctl restart sequence" || true
 
 echo Done!
-

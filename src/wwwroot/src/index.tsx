@@ -1,7 +1,3 @@
-// Polyfills:
-// Array.prototype.flat does not yet exist in Edge.
-import 'array.prototype.flat/auto';
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';

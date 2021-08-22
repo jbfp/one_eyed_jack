@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@microsoft/signalr": "^5.0.9",
-    "array.prototype.flat": "^1.2.1",
     "event-target-shim": "^6.0.2",
     "lodash.shuffle": "^4.2.0",
     "prop-types": "^15.6.2",

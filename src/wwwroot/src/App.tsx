@@ -100,7 +100,7 @@ function App(props: RouteProps) {
                     LinkedIn
                 </a>
                 <a href="https://github.com/jbfp" target="_blank" rel="noopener noreferrer">GitHub</a>
-                <a href={`https://github.com/jbfp/one_eyed_jack/commit/${hash}`} target="_blank" rel="noopener noreferrer">{hash}</a>
+                <a href={`https://github.com/jbfp/one_eyed_jack/commit/${hash}`} target="_blank" rel="noopener noreferrer">{hash.substring(0, 7)}</a>
             </div>
         </div>
     );

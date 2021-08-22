@@ -10,7 +10,7 @@ export async function getHashAsync() {
 
         if (response.ok) {
             const body = await response.text();
-            const hash = body.trim().substr(0, 7);
+            const hash = body.trim();
             return hash;
         }
     } catch {

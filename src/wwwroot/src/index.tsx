@@ -11,7 +11,15 @@ ReactDOM.render((
 ), document.getElementById('root'));
 
 // Global unhandled error event handler:
-const LOG_URL = `logs`;
+declare global {
+    interface Window { 
+        env: {
+            api: URL;
+        };
+    }
+}
+
+const LOG_URL = `${window.env.api}/logs`;
 
 window.addEventListener('error', async (event) => {
     // Cannot serialize Error from event so we convert it to a plain object first.
